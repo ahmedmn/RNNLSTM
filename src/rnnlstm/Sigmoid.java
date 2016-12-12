@@ -22,4 +22,13 @@ public class Sigmoid {
         return x * (1 - x);
     }
 
+    public double computeTangentH(double x) {
+//        return 2/(1+Math.exp(-2*x)) -1;
+        return Math.tanh(x);
+    }
+    
+    public double computeTangentHToDerivative(double x) {
+        return 1- x*x;
+    }
+    
 }

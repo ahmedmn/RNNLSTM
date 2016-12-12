@@ -1,0 +1,170 @@
+\documentclass{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[czech,english]{babel}
+
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{mathptmx}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{etoolbox}
+
+\usepackage{ulem}
+\usepackage{calc}
+\newsavebox\CBox
+\newcommand\hcancel[2][0.5pt]{%
+  \ifmmode\sbox\CBox{$#2$}\else\sbox\CBox{#2}\fi%
+  \makebox[0pt][l]{\usebox\CBox}%  
+  \rule[0.5\ht\CBox-#1/2]{\wd\CBox}{#1}}
+
+
+\usepackage{amssymb,amsmath,amsfonts}
+\usepackage{tikz,pgffor}
+\usetikzlibrary{arrows}
+\usetikzlibrary{shapes}
+\usetikzlibrary{automata}
+\usetikzlibrary{fit}
+\usetikzlibrary{backgrounds}
+
+\usetikzlibrary{decorations.pathmorphing} % for snake lines
+\usetikzlibrary{decorations.pathreplacing} % for snake lines
+\usetikzlibrary{calc} % for manimulation of coordinates
+
+\definecolor{mygreen}{RGB}{0,190,0}
+\definecolor{mybrown}{RGB}{125,50,50}
+\definecolor{myred}{RGB}{255,0,0}
+
+\usepackage{txfonts}
+\usepackage{color}
+\usepackage{wrapfig}
+
+\usepackage{eurosym}
+
+\usepackage{array}
+%\usetikzlibrary{plotmarks}
+%\usepackage{pgfplots}
+\usetheme{Warsaw}
+%\usetheme{Rochester}
+%\pgfplotsset{every axis/.append style={line width=0.6pt}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% styles
+
+
+
+      
+\tikzstyle{fixed}=[line width=1pt,dashed,->] \tikzstyle{fixed label}=[font=\small]
+%
+\tikzstyle{exp}=[line width=1pt,->,rounded corners,,>=stealth] \tikzstyle{exp rate}=[font=\small]
+%
+\tikzstyle{loc}=[line width=1pt,draw,circle,minimum size=2.6em,inner sep=0.1em]
+\tikzstyle{accepting}+=[outer sep=0.1em]
+\tikzstyle{loc cost}=[line width=1pt,draw,rectangle,inner sep=0.07em,below=6,minimum
+      width=0.8em,minimum height=0.8em,fill=white,font=\footnotesize]
+\tikzstyle{loc cost myred}=[line width=1pt,draw,color=myred,rectangle,inner sep=0.07em,below=6,minimum
+      width=0.8em,minimum height=0.8em,fill=white,font=\footnotesize]
+\tikzstyle{loc cost blue}=[line width=1pt,draw,color=blue,rectangle,inner sep=0.07em,below=6,minimum
+      width=0.8em,minimum height=0.8em,fill=white,font=\footnotesize]
+\tikzstyle{loc cost mygreen}=[line width=1pt,draw,color=mygreen,rectangle,inner sep=0.07em,below=6,minimum
+      width=0.8em,minimum height=0.8em,fill=white,font=\footnotesize]
+\tikzstyle{trans cost}=[draw,rectangle,minimum width=0.8em,minimum
+      height=0.8em,solid,inner sep=0.07em,fill=white,font=\footnotesize]
+\tikzstyle{prob}=[inner sep=0.15em, auto,font=\small]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\figpath}{figures}
+\newcommand{\add}{Err}
+\newcommand{\dCTMC}{d-CTMC}
+\newcommand{\de}[1]{\mathit{d#1}}  %frac(x)
+
+%%% running example
+\newcommand{\up}{A}%{fast}
+\newcommand{\down}{L}%{slow}
+\newcommand{\fix}{R}%{off}
+\newcommand{\done}{D}%{done}
+\newcommand{\costFdC}{\mathit{Cost}}
+
+%%% schizomaniac example
+\newcommand{\good}{good}
+\newcommand{\evil}{evil}
+\newcommand{\dead}{dead}
+
+\newcommand{\mcost}{\text{\euro}} 
+\newcommand{\msteps}{\#}
+\newcommand{\CostBound}[1]{\mathit{Bound}\left[#1\right]}
+\newcommand{\size}[1]{||#1||}
+
+\beamertemplatenavigationsymbolsempty
+
+
+\title[Faculty of Informatics, Masaryk University,
+  Brno, Czech Republic]{Amazon Review Ranking}
+\author[A. Cenita, A. Abdalla, Ľ. Korenčiak]{Ahmed Abdalla,	Azu Cenita, Ľuboš Korenčiak}
+
+\institute{
+  Faculty of Informatics, Masaryk University,
+  Brno, Czech Republic \\  
+  {\{korenciak,\,kucera,\,rehak\} \!@fi.muni.cz}
+  }
+
+\date{12. 12. 2016}
+
+\begin{document}
+
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}
+	\frametitle{Aim}
+\begin{itemize}
+	\item Amazon product reviews (textual and stars)
+	\item some reviews have only text
+	\item we want to automatically evaluate the textual reviews by accurate number of stars
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Dataset}
+	\begin{itemize}
+		\item training 40 000, testing 8000 reviews 
+		\item each review contains at most 100 words
+		\item each word is given unique natural number using standard pre-processing technique (word frequency, similar words have similar numbers)
+	\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Implementation}
+1st try:
+	\begin{itemize}
+		\item simple recurrent network 
+		\item vanishing gradient for fundamental reasons
+	\end{itemize}
+2nd try:
+	\begin{itemize}
+		\item LSTM
+		\item we are currently debugging it
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Lessons Learned}
+	\begin{itemize}
+		\item much deeper understanding of neural networks is needed when implementing them
+		\item without experience, it is hard to predict what has 0 chance to work
+		\item neural networks are hard to debug
+	\end{itemize}
+	
+	\bigskip
+	
+	Thank you for your attention!
+	
+\end{frame}
+
+\end{document}

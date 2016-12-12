@@ -70,6 +70,12 @@ public class Vector {
         return result;
     }
 
+    public void vectSigmoidNoOut(double[] vect) {
+        for (int i = 0; i < vect.length; i++) {
+            vect[i] = sigmoid.computeSigmoid(vect[i]);
+        }
+    }
+    
     public double[] vectSigmoidOutputToDerivative(double[] vect) {
         double[] result = new double[vect.length];
         for (int i = 0; i < vect.length; i++) {
@@ -78,6 +84,18 @@ public class Vector {
         return result;
     }
 
+    public void vectTangentHNoOut(double[] vect) {
+        for (int i = 0; i < vect.length; i++) {
+            vect[i] = sigmoid.computeTangentH(vect[i]);
+        }
+    }
+ 
+    public void vectTangentHToDerivativeNoOut(double[] vect) {
+        for (int i = 0; i < vect.length; i++) {
+            vect[i] = sigmoid.computeTangentHToDerivative(vect[i]);
+        }
+    }
+    
     public double[] scalarVectMult(double scalar, double[] vect) {
         double[] result = new double[vect.length];
         for (int i = 0; i < vect.length; i++) {
@@ -86,4 +104,10 @@ public class Vector {
         return result;
     }
 
+    public void copy(double[] out, double[] in) {
+        //TODO add exception?
+        for(int i = 0; i<in.length;i++) {
+            out[i] = in[i];
+        }
+    }
 }

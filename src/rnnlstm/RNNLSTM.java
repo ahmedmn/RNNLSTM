@@ -38,11 +38,11 @@ public class RNNLSTM {
     public static void main(String[] args) throws IOException {
 
         DecimalFormat df = new DecimalFormat("###.##");
-        List<String> X_trainStr = Files.readAllLines(Paths.get("E:\\Work\\MasarykUni\\NeuralNetworks\\Project\\RNNLSTM\\src\\Data\\X_train.csv"));
-        List<String> y_trainStr = Files.readAllLines(Paths.get("E:\\Work\\MasarykUni\\NeuralNetworks\\Project\\RNNLSTM\\src\\Data\\y_train.csv"));
+        List<String> X_trainStr = Files.readAllLines(Paths.get("/home/xkorenc/Desktop/neuralNetworks/RNNLSTM.git/trunk/src/Data/X_train.csv"));
+        List<String> y_trainStr = Files.readAllLines(Paths.get("/home/xkorenc/Desktop/neuralNetworks/RNNLSTM.git/trunk/src/Data/y_train.csv"));
 
-        List<String> X_testStr = Files.readAllLines(Paths.get("E:\\Work\\MasarykUni\\NeuralNetworks\\Project\\RNNLSTM\\src\\Data\\X_test.csv"));
-        List<String> y_testStr = Files.readAllLines(Paths.get("E:\\Work\\MasarykUni\\NeuralNetworks\\Project\\RNNLSTM\\src\\Data\\y_test.csv"));
+        List<String> X_testStr = Files.readAllLines(Paths.get("/home/xkorenc/Desktop/neuralNetworks/RNNLSTM.git/trunk/src/Data/X_test.csv"));
+        List<String> y_testStr = Files.readAllLines(Paths.get("/home/xkorenc/Desktop/neuralNetworks/RNNLSTM.git/trunk/src/Data/y_test.csv"));
 
         int[][] X_train = LoadData(X_trainStr);
         int[] y_train = Arrays.asList(y_trainStr.toArray(new String[y_trainStr.size()])).stream().mapToInt(Integer::parseInt).toArray();
@@ -68,14 +68,12 @@ public class RNNLSTM {
         Matrix matrix = new Matrix();
         Vector vector = new Vector();
 
-//        int binaryDim = 8;
-//        int largestNumber = (int) Math.pow(2, binaryDim);
-        double alpha = 0.005;
+        double alpha = 0.001;
         int inputDim = 200;
         int hiddenDim = inputDim;
 
-        int dataRownum = X_train.length;
-        int datacolnum = X_train[0].length;
+        int dataRowNum = X_train.length;
+        int dataColNum = X_train[0].length;
 
         double[] weightsOut = new double[inputDim];
         double[] weightsOutUpdate = new double[inputDim];
@@ -112,13 +110,12 @@ public class RNNLSTM {
 
         Random rand = new Random();
 
-        for (int j = 0; j < 250; j++) {
+        for (int j = 0; j < 2; j++) 
+        {
 
-            double[] d = new double[dataRownum];
+            double[] d = new double[dataRowNum];
 
-            double overallError = 0;
-
-            double[][] layer1Values = new double[dataRownum + 1][];
+            double[][] layer1Values = new double[dataColNum + 1][];
             layer1Values[0] = new double[hiddenDim];
             for (int k = 0; k < hiddenDim; k++) {
                 layer1Values[0][k] = 0;
@@ -126,33 +123,30 @@ public class RNNLSTM {
 
             double[] layer1, x, temp;
             double layer2, y, layer2Error, layer2Delta;
-            for (int position = 0; position < dataRownum; position++) {
-                x = new double[datacolnum];
-                for (int col = 0; col < datacolnum; col++) {
-                    x[col] = X_train[position][col];
+            for (int reviewRow = 0; reviewRow < dataRowNum; reviewRow++) {
+                x = new double[dataColNum];
+                for (int wordCol = 0; wordCol < dataColNum; wordCol++) {
+                    x[wordCol] = X_train[reviewRow][wordCol];
                 }
-//                x[0] = a.get(binaryDim - position - 1) ? 1 : 0;
-//                x[1] = b.get(binaryDim - position - 1) ? 1 : 0;
 
-                // y = c.get(binaryDim - position - 1) ? 1 : 0;
-                y = y_train[position];
+                y = y_train[reviewRow];
 
-                for (int col = 0; col < datacolnum; col++) {
-                    temp = vector.scalarVectMult(x[col], weightsIn);
-                    vector.addVectors(temp, matrix.vectorMatrixMult(layer1Values[col], weightsHidden));
+                for (int wordCol = 0; wordCol < dataColNum; wordCol++) {
+                    temp = vector.scalarVectMult(x[wordCol], weightsIn);
+                    vector.addVectors(temp, matrix.vectorMatrixMult(layer1Values[wordCol], weightsHidden));
                     layer1 = vector.vectSigmoid(temp); //memory vector
 
-                    layer1Values[col + 1] = layer1;
+                    layer1Values[wordCol + 1] = layer1;
                 }
 
                 //compute output
                 layer2 = sigmoid.computeSigmoid(vector.vectorVectorMultDot(layer1Values[100], weightsOut));
 
                 layer2Error = y - layer2;
-                d[position] = Math.round(layer2);
+                d[reviewRow] = Math.round(layer2);
                 layer2Delta = (layer2Error * sigmoid.sigmoidOutputToDerivative(layer2)); //maybe consider Math.abs if it does not work
 
-                addVectors(weightsOutUpdate, vector.scalarVectMult(layer2Delta, layer1Values[datacolnum]));
+                addVectors(weightsOutUpdate, vector.scalarVectMult(layer2Delta, layer1Values[dataColNum]));
 
                 
                 double[] futureLayer1Delta = vector.scalarVectMult(layer2Delta, weightsOut);
@@ -160,7 +154,7 @@ public class RNNLSTM {
                 
                 double[] prevLayer1, layer1Delta;
                 //backpropagation
-                for (int col = datacolnum-1; col > 0; col--) {
+                for (int col = dataColNum-1; col > 0; col--) {
 //                x = new double[2];
 //                x[0] = a.get(binaryDim - position) ? 1 : 0;
 //                x[1] = b.get(binaryDim - position) ? 1 : 0;
@@ -180,6 +174,15 @@ public class RNNLSTM {
                     vector.addVectors(weightsInUpdate, vector.scalarVectMult(x[col], layer1Delta));
 
                     futureLayer1Delta = layer1Delta;
+                    
+                    if (col ==50 && reviewRow % 100 == 0) {
+                        double gradient = 0;
+                        for (int i = 0; i < layer1Delta.length; i++) {
+                            gradient += layer1Delta[i];
+                        }
+                        System.out.println("Gradient at 50-th layer: " + gradient);
+                    }
+                    
                 }
 
                 vector.addVectors(weightsOut, vector.scalarVectMult(alpha, weightsOutUpdate));
@@ -199,19 +202,8 @@ public class RNNLSTM {
                     weightsInUpdate[i] = 0;
                 }
 
-                if (j % 1000 == 0) {
-                    System.out.println("Error: " + overallError);
-//                System.out.println("Pred: " + toString(d));
-//                System.out.println("True: " + toString(c, binaryDim));
-//                int out = 0;
-//                for (int i = 0; i < binaryDim; i++) {
-//                    out += d[binaryDim - i - 1] * ((int) Math.pow(2, i));
-//                }
-//                System.out.print(aInt + " + " + bInt + " = " + out);
-//                if (out != cInt) {
-//                    System.out.println("\t\t\t\t\tWRONG");
-//                }
-//                System.out.println("\n------------");
+                if (reviewRow % 100 == 0) {
+                    System.out.println("Error: " + layer2Error);
 
                     System.out.print("Pred: [");
                     for (int i = 0; i < 50; i++) {
