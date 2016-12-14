@@ -41,6 +41,16 @@ public class Vector {
         return result;
     }
 
+    public void vectorVectorMultAsteriskNoOut(double[] result, double[] vect1, double[] vect2) {
+        if (vect1.length != vect2.length) {
+            throw new IllegalArgumentException("Dimension mismatch, vector lengths are "
+                    + vect1.length + " and " + vect2.length + ".");
+        }
+        for (int i = 0; i < vect1.length; i++) {
+            result[i] = vect1[i] * vect2[i];
+        }
+    }
+    
     public double[][] vectorVectorMultDotM(double[] vect1, double[] vect2) {
         double[][] result = new double[vect1.length][];
         for (int i = 0; i < vect1.length; i++) {
@@ -52,6 +62,14 @@ public class Vector {
         return result;
     }
 
+    public void vectorVectorMultDotMNoOutAdd(double[][] result, double[] vect1, double[] vect2) {
+        for (int i = 0; i < vect1.length; i++) {
+            for (int j = 0; j < vect2.length; j++) {
+                result[i][j] += vect1[i] * vect2[j];
+            }
+        }
+    }
+    
     public void addVectors(double[] vect1, double[] vect2) {
         if (vect1.length != vect2.length) {
             throw new IllegalArgumentException("Dimension mismatch, vector lengths are "
@@ -84,6 +102,12 @@ public class Vector {
         return result;
     }
 
+    public void vectSigmoidOutputToDerivativeNoOut(double[] result, double[] vect) {
+        for (int i = 0; i < vect.length; i++) {
+            result[i] = sigmoid.sigmoidOutputToDerivative(vect[i]);
+        }
+    }
+    
     public void vectTangentHNoOut(double[] vect) {
         for (int i = 0; i < vect.length; i++) {
             vect[i] = sigmoid.computeTangentH(vect[i]);
@@ -104,6 +128,12 @@ public class Vector {
         return result;
     }
 
+    public void scalarVectMultNoOut(double[] result, double scalar, double[] vect) {
+        for (int i = 0; i < vect.length; i++) {
+            result[i] = scalar * vect[i];
+        }
+    }
+    
     public void copy(double[] out, double[] in) {
         //TODO add exception?
         for(int i = 0; i<in.length;i++) {

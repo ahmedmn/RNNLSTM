@@ -30,6 +30,31 @@ public class Matrix {
         return result;
     }
 
+    public void vectorMatrixMultNoOut(double[] result, double[] vect, double[][] matrix) {
+        if (vect.length != matrix.length) {
+            throw new IllegalArgumentException("Dimension mismatch, vector length is "
+                    + vect.length + " and matrix column length is " + matrix.length + ".");
+        }
+        for (int i = 0; i < matrix[0].length; i++) {
+            result[i] = 0;
+            for (int j = 0; j < vect.length; j++) {
+                result[i] += vect[j] * matrix[j][i];
+            }
+        }
+    }
+
+    public void vectorMatrixMultNoOutAdd(double[] result, double[] vect, double[][] matrix) {
+        if (vect.length != matrix.length) {
+            throw new IllegalArgumentException("Dimension mismatch, vector length is "
+                    + vect.length + " and matrix column length is " + matrix.length + ".");
+        }
+        for (int i = 0; i < matrix[0].length; i++) {
+            for (int j = 0; j < vect.length; j++) {
+                result[i] += vect[j] * matrix[j][i];
+            }
+        }
+    }
+    
     public void addMatrices(double[][] matrix1, double[][] matrix2) {
         if (matrix1.length != matrix2.length) {
             throw new IllegalArgumentException("Dimension mismatch, number of lines in matrices are "

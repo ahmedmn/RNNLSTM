@@ -73,7 +73,7 @@ public class TrueLSTM {
         
         double alpha = 0.05;
         int hiddenDim = 300;
-        int numOfReviews = 200;
+        int numOfReviews = 10;
         int numOfIterations = 1000000;
         int numNotPrintedIters = 1;
         
@@ -297,7 +297,7 @@ public class TrueLSTM {
                     temp = vector.vectorVectorMultAsterisk(futureOutputDelta, almostOutput[wordCol]); //do^t
                     temp = vector.vectorVectorMultAsterisk(temp, vector.vectSigmoidOutputToDerivative(outputGate[wordCol]));//d(o^)^t
                     vector.addVectors(weightsOutUpdate, vector.scalarVectMult(x[wordCol], temp)); //TODO check whether it is correct
-                    matrix.addMatrices(weightsOutUpdate2, vector.vectorVectorMultDotM(output[wordCol], temp));
+                    matrix.addMatrices(weightsOutUpdate2, vector.vectorVectorMultDotM(output[wordCol-1], temp));
                     //computing dh^(t-1)
                     currentOutputDelta = matrix.vectorMatrixMult(temp, matrix.transpose(weightsOut2));
 
@@ -312,7 +312,7 @@ public class TrueLSTM {
                     temp = vector.vectorVectorMultAsterisk(futureMemoryDelta, memory[wordCol - 1]); //df^t
                     temp = vector.vectorVectorMultAsterisk(temp, vector.vectSigmoidOutputToDerivative(forgetGate[wordCol]));
                     vector.addVectors(weightsForgetUpdate, vector.scalarVectMult(x[wordCol], temp)); //TODO check whether it is correct
-                    matrix.addMatrices(weightsForgetUpdate2, vector.vectorVectorMultDotM(output[wordCol], temp));
+                    matrix.addMatrices(weightsForgetUpdate2, vector.vectorVectorMultDotM(output[wordCol-1], temp));
                     //computing dh^(t-1)
                     vector.addVectors(currentOutputDelta, matrix.vectorMatrixMult(temp, matrix.transpose(weightsForget2)));
 
@@ -320,7 +320,7 @@ public class TrueLSTM {
                     temp = vector.vectorVectorMultAsterisk(futureMemoryDelta, memoryInput[wordCol]); //di^t
                     temp = vector.vectorVectorMultAsterisk(temp, vector.vectSigmoidOutputToDerivative(inputGate[wordCol]));
                     vector.addVectors(weightsInUpdate, vector.scalarVectMult(x[wordCol], temp)); //TODO check whether it is correct
-                    matrix.addMatrices(weightsInUpdate2, vector.vectorVectorMultDotM(output[wordCol], temp));
+                    matrix.addMatrices(weightsInUpdate2, vector.vectorVectorMultDotM(output[wordCol-1], temp));
                     //computing dh^(t-1)
                     vector.addVectors(currentOutputDelta, matrix.vectorMatrixMult(temp, matrix.transpose(weightsIn2)));
 
@@ -329,7 +329,7 @@ public class TrueLSTM {
                     vector.vectTangentHToDerivativeNoOut(memoryInput[wordCol]);
                     temp = vector.vectorVectorMultAsterisk(temp, memoryInput[wordCol]); //d(a^)^t
                     vector.addVectors(weightsMemoryUpdate, vector.scalarVectMult(x[wordCol], temp)); //TODO check whether it is correct
-                    matrix.addMatrices(weightsMemoryUpdate2, vector.vectorVectorMultDotM(output[wordCol], temp));
+                    matrix.addMatrices(weightsMemoryUpdate2, vector.vectorVectorMultDotM(output[wordCol-1], temp));
                     //computing dh^(t-1)
                     vector.addVectors(currentOutputDelta, matrix.vectorMatrixMult(temp, matrix.transpose(weightsMemory2)));
 
