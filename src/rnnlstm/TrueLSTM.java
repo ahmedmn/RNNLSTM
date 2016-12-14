@@ -50,70 +50,81 @@ public class TrueLSTM {
         int[][] X_test = LoadData(X_testStr);
         int[] y_test = Arrays.asList(y_testStr.toArray(new String[y_testStr.size()])).stream().mapToInt(Integer::parseInt).toArray();
 
-        System.out.println("Traing Sample");
+        System.out.println("Training Sample 0");
         System.out.print("[");
         for (int i = 0; i < X_train[0].length; i++) {
             System.out.print(X_train[0][i] + " ");
         }
         System.out.println("]" + "\n" + y_train[0]);
 
-        System.out.println("Testing Sample");
+        System.out.println("Training Sample 1");
         System.out.print("[");
-        for (int i = 0; i < X_test[0].length; i++) {
-            System.out.print(X_test[0][i] + " ");
+        for (int i = 0; i < X_train[1].length; i++) {
+            System.out.print(X_train[1][i] + " ");
         }
-        System.out.println("]" + "\n" + y_test[0]);
+        System.out.println("]" + "\n" + y_train[1]);
 
 //        List<ArrayList> X_train = new ArrayList<ArrayList>(Arrays.asList(X_trainStr.split))
         Sigmoid sigmoid = new Sigmoid();
         Matrix matrix = new Matrix();
         Vector vector = new Vector();
 
-        double alpha = 0.005;
-        int hiddenDim = 200;
-        int numOfReviews = 2;
+        ////parameters of neural network
+        
+        double alpha = 0.05;
+        int hiddenDim = 300;
+        int numOfReviews = 200;
         int numOfIterations = 1000000;
-        int numHiddenIters = 1;
+        int numNotPrintedIters = 1;
         
         int dataRowNum = X_train.length;
         int dataColNum = X_train[0].length;
-        double[] d = new double[dataRowNum];        
-        double[] outputs = new double[dataRowNum];
+        double[] d          = new double[dataRowNum];        
+        double[] outputs    = new double[dataRowNum];
+        double[] errors     = new double[dataRowNum];
         
         //weights for input and corresponding gates
-        double[] weightsIn = new double[hiddenDim];
-        double[] weightsInUpdate = new double[hiddenDim];
+        double[] weightsIn          = new double[hiddenDim];
+        double[] weightsInUpdate    = new double[hiddenDim];
         for (int i = 0; i < hiddenDim; i++) {
             weightsIn[i] = Math.random() * 2 - 1;
             weightsInUpdate[i] = 0;
         }
 
-        double[] weightsForget = new double[hiddenDim];
-        double[] weightsForgetUpdate = new double[hiddenDim];
+        double[] weightsForget          = new double[hiddenDim];
+        double[] weightsForgetUpdate    = new double[hiddenDim];
         for (int i = 0; i < hiddenDim; i++) {
             weightsForget[i] = Math.random() * 2 - 1;
             weightsForgetUpdate[i] = 0;
         }
 
-        double[] weightsMemory = new double[hiddenDim];
-        double[] weightsMemoryUpdate = new double[hiddenDim];
+        double[] weightsMemory          = new double[hiddenDim];
+        double[] weightsMemoryUpdate    = new double[hiddenDim];
         for (int i = 0; i < hiddenDim; i++) {
             weightsMemory[i] = Math.random() * 2 - 1;
             weightsMemoryUpdate[i] = 0;
         }
 
-        double[] weightsOut = new double[hiddenDim];
-        double[] weightsOutUpdate = new double[hiddenDim];
+        double[] weightsOut         = new double[hiddenDim];
+        double[] weightsOutUpdate   = new double[hiddenDim];
         for (int i = 0; i < hiddenDim; i++) {
             weightsOut[i] = Math.random() * 2 - 1;
             weightsOutUpdate[i] = 0;
         }
 
+        //final output weights
+        double[] weightsFinal = new double[hiddenDim];
+        double[] weightsFinalUpdate = new double[hiddenDim];
+        for (int i = 0; i < hiddenDim; i++) {
+            weightsFinal[i] = Math.random() * 2 - 1;
+            weightsFinalUpdate[i] = 0;
+        }
+        
         // weitghts for output of previous stage and corresponding gates
         double[] temp;
         double[] temp2;
 
-        double[][] weightsIn2 = new double[hiddenDim][];
+        double[][] weightsIn2       = new double[hiddenDim][];
         double[][] weightsInUpdate2 = new double[hiddenDim][];
         for (int i = 0; i < hiddenDim; i++) {
             temp = new double[hiddenDim];
@@ -127,7 +138,7 @@ public class TrueLSTM {
 
         }
 
-        double[][] weightsForget2 = new double[hiddenDim][];
+        double[][] weightsForget2       = new double[hiddenDim][];
         double[][] weightsForgetUpdate2 = new double[hiddenDim][];
         for (int i = 0; i < hiddenDim; i++) {
             temp = new double[hiddenDim];
@@ -141,7 +152,7 @@ public class TrueLSTM {
 
         }
 
-        double[][] weightsMemory2 = new double[hiddenDim][];
+        double[][] weightsMemory2       = new double[hiddenDim][];
         double[][] weightsMemoryUpdate2 = new double[hiddenDim][];
         for (int i = 0; i < hiddenDim; i++) {
             temp = new double[hiddenDim];
@@ -155,8 +166,8 @@ public class TrueLSTM {
 
         }
 
-        double[][] weightsOut2 = new double[hiddenDim][];
-        double[][] weightsOutUpdate2 = new double[hiddenDim][];
+        double[][] weightsOut2          = new double[hiddenDim][];
+        double[][] weightsOutUpdate2    = new double[hiddenDim][];
         for (int i = 0; i < hiddenDim; i++) {
             temp = new double[hiddenDim];
             temp2 = new double[hiddenDim];
@@ -169,58 +180,60 @@ public class TrueLSTM {
 
         }
 
-        //final output weights
-        double[] weightsFinal = new double[hiddenDim];
-        double[] weightsFinalUpdate = new double[hiddenDim];
-        for (int i = 0; i < hiddenDim; i++) {
-            weightsFinal[i] = Math.random() * 2 - 1;
-            weightsFinalUpdate[i] = 0;
-        }
 
         Random rand = new Random();
 
-        int counter =0;
-        for (int j = 0; j < numOfIterations; j++) {
+        double[] x;
+        double[][] forgetGate, inputGate, outputGate, memoryInput, memory, output, almostOutput;
+        forgetGate = new double[dataColNum + 1][]; //f^t
+        inputGate = new double[dataColNum + 1][]; //i^t
+        outputGate = new double[dataColNum + 1][]; //o^t
+        memoryInput = new double[dataColNum + 1][]; //a^t
+        memory = new double[dataColNum + 1][]; //c^t
+        output = new double[dataColNum + 1][]; //h^t
+        almostOutput = new double[dataColNum + 1][];
+        double finalOutput, y, finalOutputError, finalOutputDelta;        
+        
+        //initialization
+        for(int j=1;j<dataColNum + 1;j++) {
+            forgetGate[j] = new double[hiddenDim];
+            inputGate[j] = new double[hiddenDim];
+            outputGate[j] = new double[hiddenDim];
+            memoryInput[j] = new double[hiddenDim];
+            memory[j] = new double[hiddenDim];
+            output[j] = new double[hiddenDim];
+            almostOutput[j] = new double[hiddenDim];
+        }
+        memory[0] = new double[hiddenDim];
+        output[0] = new double[hiddenDim];
+        
+        double[] futureOutputDelta, currentOutputDelta, futureMemoryDelta, currentMemoryDelta;
+        
+        int i, j, k, reviewRow, wordCol, counter =0;
+        for (j = 0; j < numOfIterations; j++) {
 
-
-
-            double[] layer1, x;
-            double[][] forgetGate, inputGate, outputGate, memoryInput, memory, output, almostOutput;
-            forgetGate = new double[dataColNum + 1][]; //f^t
-            inputGate = new double[dataColNum + 1][]; //i^t
-            outputGate = new double[dataColNum + 1][]; //o^t
-            memoryInput = new double[dataColNum + 1][]; //a^t
-            memory = new double[dataColNum + 1][]; //c^t
-            output = new double[dataColNum + 1][]; //h^t
-            almostOutput = new double[dataColNum + 1][];
-
-            memory[0] = new double[hiddenDim];
-            output[0] = new double[hiddenDim];
-            for (int k = 0; k < hiddenDim; k++) {
+            for (k = 0; k < hiddenDim; k++) {
                 memory[0][k] = 0;
                 output[0][k] = 0;
             }
 
-            for (int k = 0; k < dataColNum+1; k++) {
+            for (k = 0; k < dataColNum+1; k++) {
                 almostOutput[k] = new double[hiddenDim];
             }
 
-            double finalOutput, y, finalOutputError, finalOutputDelta;
-            
-
-            for (int reviewRow = 0; reviewRow < numOfReviews; reviewRow++) { //TODO erase
+            for (reviewRow = 0; reviewRow < numOfReviews; reviewRow++) { //TODO erase
 //            for (int reviewRow = 0; reviewRow < dataRowNum; reviewRow++) {
                 counter++;
 
                 x = new double[dataColNum + 1];
-                for (int wordCol = 0; wordCol < dataColNum; wordCol++) {
+                for (wordCol = 0; wordCol < dataColNum; wordCol++) {
                     x[wordCol+1] = X_train[reviewRow][wordCol];
                 }
 
                 y = y_train[reviewRow];
 
                 //forward pass
-                for (int wordCol = 1; wordCol <= dataColNum; wordCol++) {
+                for (wordCol = 1; wordCol <= dataColNum; wordCol++) {
                     temp = vector.scalarVectMult(x[wordCol], weightsForget);
                     vector.addVectors(temp, matrix.vectorMatrixMult(output[wordCol-1], weightsForget2));
                     vector.vectSigmoidNoOut(temp);
@@ -230,7 +243,7 @@ public class TrueLSTM {
                     temp = vector.scalarVectMult(x[wordCol], weightsIn);
                     vector.addVectors(temp, matrix.vectorMatrixMult(output[wordCol-1], weightsIn2));
                     vector.vectSigmoidNoOut(temp);
-                    inputGate[wordCol] = temp; //TODO we won't need to create new arrays for temp/ we can reuse the old ones and keep them in inputGate[wordCol]
+                    inputGate[wordCol] = temp; //TODO we won't need to create new arrays for temp, we can reuse the old ones and keep them in inputGate[wordCol]
 
                     temp = vector.scalarVectMult(x[wordCol], weightsMemory);
                     vector.addVectors(temp, matrix.vectorMatrixMult(output[wordCol-1], weightsMemory2));
@@ -262,26 +275,24 @@ public class TrueLSTM {
                 //compute output
                 finalOutput = sigmoid.computeSigmoid(vector.vectorVectorMultDot(output[dataColNum], weightsFinal));
 
-                finalOutputError = Math.pow((y - finalOutput)*10,2);
+//                finalOutputError = -200 * (y-finalOutput); //Math.pow((y - finalOutput)*10,2)
+                finalOutputError = 2*(y-finalOutput); //Math.pow((y - finalOutput),2)                
                 d[reviewRow] = Math.round(finalOutput);
-                outputs[reviewRow] = finalOutput;
-                finalOutputDelta = (finalOutputError * sigmoid.sigmoidOutputToDerivative(finalOutput)); //maybe consider Math.abs if it does not work
+                outputs[reviewRow]  = finalOutput;
+                errors[reviewRow]   = finalOutputError;
+                finalOutputDelta = (finalOutputError * sigmoid.sigmoidOutputToDerivative(finalOutput));
 
-                addVectors(weightsFinalUpdate, vector.scalarVectMult(finalOutputDelta, weightsFinal)); //computing dh
+                weightsFinalUpdate= vector.scalarVectMult(finalOutputDelta, weightsFinal); //computing dh
 
-                double[] futureOutputDelta = weightsFinalUpdate;
-                double[] currentOutputDelta = new double[hiddenDim];
-                double[] futureMemoryDelta = new double[hiddenDim];
-                double[] currentMemoryDelta = new double[hiddenDim];
+                futureOutputDelta = weightsFinalUpdate;
+                futureMemoryDelta = new double[hiddenDim];
 
-                for (int i = 0; i < hiddenDim; i++) {
-                    futureMemoryDelta[i] = 0;
+                for (k = 0; k < hiddenDim; k++) {
+                    futureMemoryDelta[k] = 0;
                 }
 
-                double[] prevLayer1, layer1Delta;
-
                 //backpropagation
-                for (int wordCol = dataColNum; wordCol > 0; wordCol--) {
+                for (wordCol = dataColNum; wordCol > 0; wordCol--) {
 
                     temp = vector.vectorVectorMultAsterisk(futureOutputDelta, almostOutput[wordCol]); //do^t
                     temp = vector.vectorVectorMultAsterisk(temp, vector.vectSigmoidOutputToDerivative(outputGate[wordCol]));//d(o^)^t
@@ -326,19 +337,6 @@ public class TrueLSTM {
                     futureMemoryDelta = currentMemoryDelta;
                     futureOutputDelta = currentOutputDelta;
 
-//                    if (wordCol ==50 && reviewRow % 100 == 0) {
-//                        double gradient = 0;
-//                        for (int i = 0; i < layer1Delta.length; i++) {
-//                            gradient += layer1Delta[i];
-//                        }
-//                        System.out.println("Gradient at 50-th layer: " + gradient);
-//                    }
-
-//                    double count=0;
-//                    for(double res:futureMemoryDelta){
-//                        count += res;
-//                    }
-//                    System.out.print(count + " ");
                 }
 //                System.out.println("");
                 
@@ -346,21 +344,23 @@ public class TrueLSTM {
                 vector.addVectors(weightsForget, vector.scalarVectMult(alpha, weightsForgetUpdate));
                 vector.addVectors(weightsMemory, vector.scalarVectMult(alpha, weightsMemoryUpdate));
                 vector.addVectors(weightsOut, vector.scalarVectMult(alpha, weightsOutUpdate));
+                vector.addVectors(weightsFinal, vector.scalarVectMult(alpha,weightsFinalUpdate));
 
                 matrix.addMatrices(weightsIn2, matrix.scalarMatrixMult(alpha, weightsInUpdate2));
                 matrix.addMatrices(weightsForget2, matrix.scalarMatrixMult(alpha, weightsForgetUpdate2));
                 matrix.addMatrices(weightsMemory2, matrix.scalarMatrixMult(alpha, weightsMemoryUpdate2));
                 matrix.addMatrices(weightsOut2, matrix.scalarMatrixMult(alpha, weightsOutUpdate2));
 
-                for (int i = 0; i < weightsInUpdate.length; i++) {
+                for (i = 0; i < weightsInUpdate.length; i++) {
                     weightsInUpdate[i] = 0;
                     weightsForgetUpdate[i] = 0;
                     weightsMemoryUpdate[i] = 0;
                     weightsOutUpdate[i] = 0;
+                    weightsFinalUpdate[i] =0;
                 }
 
-                for (int i = 0; i < weightsInUpdate2.length; i++) {
-                    for (int k = 0; k < weightsInUpdate2[0].length; k++) {
+                for (i = 0; i < weightsInUpdate2.length; i++) {
+                    for (k = 0; k < weightsInUpdate2[0].length; k++) {
                         weightsInUpdate2[i][k] = 0;
                         weightsForgetUpdate2[i][k] = 0;
                         weightsMemoryUpdate2[i][k] = 0;
@@ -370,27 +370,29 @@ public class TrueLSTM {
 
                 
                 
-                if (counter % numHiddenIters == 0) {
+                if (counter % numNotPrintedIters == 0) {
                     counter= 0;
                     DecimalFormat df = new DecimalFormat(".00");
+
+                    System.out.println("================ " + reviewRow);
                     
                     System.out.print("Pred: [");
-                    for (int i = 0; i < numOfReviews; i++) {
+                    for (i = 0; i < numOfReviews; i++) {
                         System.out.print(df.format(outputs[i]) + " ");
                     }
                     System.out.println("]");
 
                     System.out.print("Actu: [");
-                    for (int i = 0; i < numOfReviews; i++) {
+                    for (i = 0; i < numOfReviews; i++) {
                         System.out.print(y_train[i] + "   ");
                     }
                     System.out.println("]");
 
-//                    System.out.print("Err : [");
-//                    for (int i = 0; i < numOfReviews; i++) {
-//                        System.out.print(y_train[i] + " ");
-//                    }
-//                    System.out.println("]");
+                    System.out.print("Err : [");
+                    for (i = 0; i < numOfReviews; i++) {
+                        System.out.print(df.format(errors[i]) + "   ");
+                    }
+                    System.out.println("]");
                     
                     System.out.println("Accuracy: " + df.format(getPercentage(y_train, d, numOfReviews)) + " %");
                 }
