@@ -50,6 +50,16 @@ public class Vector {
             result[i] = vect1[i] * vect2[i];
         }
     }
+
+    public void vectorVectorMultAsteriskNoOutAdd(double[] result, double[] vect1, double[] vect2) {
+//        if (vect1.length != vect2.length) {
+//            throw new IllegalArgumentException("Dimension mismatch, vector lengths are "
+//                    + vect1.length + " and " + vect2.length + ".");
+//        }
+        for (int i = 0; i < vect1.length; i++) {
+            result[i] += vect1[i] * vect2[i];
+        }
+    }
     
     public double[][] vectorVectorMultDotM(double[] vect1, double[] vect2) {
         double[][] result = new double[vect1.length][];
@@ -139,6 +149,12 @@ public class Vector {
     public void scalarVectMultNoOut(double[] result, double scalar, double[] vect) {
         for (int i = 0; i < vect.length; i++) {
             result[i] = scalar * vect[i];
+        }
+    }
+
+    public void scalarVectMultNoOutAdd(double[] result, double scalar, double[] vect) {
+        for (int i = 0; i < vect.length; i++) {
+            result[i] += scalar * vect[i];
         }
     }
     

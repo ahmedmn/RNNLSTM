@@ -247,32 +247,27 @@ public class TrueLSTM {
                 //forward pass
                 for (wordCol = 1; wordCol <= dataColNum; wordCol++) {
                     vector.scalarVectMultNoOut(forgetGate[wordCol], x[wordCol], weightsForget);
-                    matrix.vectorMatrixMultNoOut(temp2, output[wordCol-1], weightsForget2);
-                    vector.addVectors(forgetGate[wordCol], temp2);
+                    matrix.vectorMatrixMultNoOutAdd(forgetGate[wordCol], output[wordCol-1], weightsForget2);
                     vector.vectSigmoidNoOut(forgetGate[wordCol]);
                     vector.vectorVectorMultAsteriskNoOut(memory[wordCol], memory[wordCol-1], forgetGate[wordCol]);
 
                     vector.scalarVectMultNoOut(inputGate[wordCol], x[wordCol], weightsIn);
-                    matrix.vectorMatrixMultNoOut(temp2, output[wordCol-1], weightsIn2);
-                    vector.addVectors(inputGate[wordCol], temp2);
+                    matrix.vectorMatrixMultNoOutAdd(inputGate[wordCol], output[wordCol-1], weightsIn2);
                     vector.vectSigmoidNoOut(inputGate[wordCol]);
 
                     vector.scalarVectMultNoOut(memoryInput[wordCol], x[wordCol], weightsMemory);
-                    matrix.vectorMatrixMultNoOut(temp2, output[wordCol-1], weightsMemory2);
-                    vector.addVectors(memoryInput[wordCol], temp2);
+                    matrix.vectorMatrixMultNoOutAdd(memoryInput[wordCol], output[wordCol-1], weightsMemory2);
                     vector.vectTangentHNoOut(memoryInput[wordCol]);
 
-                    vector.vectorVectorMultAsteriskNoOut(temp2, 
-                                                        inputGate[wordCol],
-                                                        memoryInput[wordCol]);
-                    vector.addVectors(memory[wordCol], temp2);
+                    vector.vectorVectorMultAsteriskNoOutAdd(memory[wordCol], 
+                                                            inputGate[wordCol],
+                                                            memoryInput[wordCol]);
 
                     vector.copy(almostOutput[wordCol], memory[wordCol]);
                     vector.vectTangentHNoOut(almostOutput[wordCol]);
 
                     vector.scalarVectMultNoOut(outputGate[wordCol], x[wordCol], weightsOut);
-                    matrix.vectorMatrixMultNoOut(temp2, output[wordCol-1], weightsOut2);
-                    vector.addVectors(outputGate[wordCol], temp2);
+                    matrix.vectorMatrixMultNoOutAdd(outputGate[wordCol], output[wordCol-1], weightsOut2);
                     vector.vectSigmoidNoOut(outputGate[wordCol]);
 
                     vector.vectorVectorMultAsteriskNoOut(output[wordCol], outputGate[wordCol], almostOutput[wordCol]);
@@ -305,8 +300,7 @@ public class TrueLSTM {
                     vector.vectorVectorMultAsteriskNoOut(temp, futureOutputDelta, almostOutput[wordCol]); //do^t
                     vector.vectSigmoidOutputToDerivativeNoOut(temp2, outputGate[wordCol]);
                     vector.vectorVectorMultAsteriskNoOut(temp, temp, temp2);//d(o^)^t
-                    vector.scalarVectMultNoOut(temp2, x[wordCol], temp);
-                    vector.addVectors(weightsOutUpdate, temp2);
+                    vector.scalarVectMultNoOutAdd(weightsOutUpdate, x[wordCol], temp);
                     vector.vectorVectorMultDotMNoOutAdd(weightsOutUpdate2, output[wordCol-1], temp);
                     //computing dh^(t-1)
                     matrix.vectorTransposeMatrixMultNoOutAdd(currentOutputDelta, temp, weightsOut2);
@@ -336,8 +330,7 @@ public class TrueLSTM {
                     vector.vectorVectorMultAsteriskNoOut(temp, futureMemoryDelta, memory[wordCol - 1]); //df^t
                     vector.vectSigmoidOutputToDerivativeNoOut(temp2, forgetGate[wordCol]);
                     vector.vectorVectorMultAsteriskNoOut(temp, temp, temp2);
-                    vector.scalarVectMultNoOut(temp2, x[wordCol], temp);
-                    vector.addVectors(weightsForgetUpdate, temp2);
+                    vector.scalarVectMultNoOutAdd(weightsForgetUpdate, x[wordCol], temp);
                     vector.vectorVectorMultDotMNoOutAdd(weightsForgetUpdate2, output[wordCol-1], temp);
                     //computing dh^(t-1)
                     matrix.vectorTransposeMatrixMultNoOutAdd(currentOutputDelta, temp, weightsForget2);
@@ -355,8 +348,7 @@ public class TrueLSTM {
                     vector.vectorVectorMultAsteriskNoOut(temp, futureMemoryDelta, memoryInput[wordCol]); //di^t
                     vector.vectSigmoidOutputToDerivativeNoOut(temp2, inputGate[wordCol]);
                     vector.vectorVectorMultAsteriskNoOut(temp, temp, temp2);
-                    vector.scalarVectMultNoOut(temp2, x[wordCol], temp);
-                    vector.addVectors(weightsInUpdate, temp2);
+                    vector.scalarVectMultNoOutAdd(weightsInUpdate, x[wordCol], temp);
                     vector.vectorVectorMultDotMNoOutAdd(weightsInUpdate2,output[wordCol-1], temp);
                     //computing dh^(t-1)
                     matrix.vectorTransposeMatrixMultNoOutAdd(currentOutputDelta, temp, weightsIn2);
@@ -374,8 +366,7 @@ public class TrueLSTM {
                     vector.vectorVectorMultAsteriskNoOut(temp, futureMemoryDelta, inputGate[wordCol]); //da^t
                     vector.vectTangentHToDerivativeNoOut(memoryInput[wordCol]);
                     vector.vectorVectorMultAsteriskNoOut(temp, temp, memoryInput[wordCol]); //d(a^)^t
-                    vector.scalarVectMultNoOut(temp2, x[wordCol], temp);
-                    vector.addVectors(weightsMemoryUpdate, temp2);
+                    vector.scalarVectMultNoOutAdd(weightsMemoryUpdate, x[wordCol], temp);
                     vector.vectorVectorMultDotMNoOutAdd(weightsMemoryUpdate2, output[wordCol-1], temp);
                     //computing dh^(t-1)
                     matrix.vectorTransposeMatrixMultNoOutAdd(currentOutputDelta, temp, weightsMemory2);
@@ -401,35 +392,24 @@ public class TrueLSTM {
                 }
 
                 
-                vector.scalarVectMultNoOut(alpha,   weightsInUpdate);
-                vector.scalarVectMultNoOut(alpha,   weightsForgetUpdate);                
-                vector.scalarVectMultNoOut(alpha,   weightsMemoryUpdate);
-                vector.scalarVectMultNoOut(alpha,   weightsOutUpdate);
-                vector.scalarVectMultNoOut(alpha,   weightsFinalUpdate);
+                vector.scalarVectMultNoOutAdd(weightsIn,    alpha,   weightsInUpdate);
+                vector.scalarVectMultNoOutAdd(weightsForget,alpha,   weightsForgetUpdate);                
+                vector.scalarVectMultNoOutAdd(weightsMemory,alpha,   weightsMemoryUpdate);
+                vector.scalarVectMultNoOutAdd(weightsOut,   alpha,   weightsOutUpdate);
+                vector.scalarVectMultNoOutAdd(weightsFinal, alpha,   weightsFinalUpdate);
                 
-                vector.addVectors(weightsIn,        weightsInUpdate);
-                vector.addVectors(weightsForget,    weightsForgetUpdate);
-                vector.addVectors(weightsMemory,    weightsMemoryUpdate);
-                vector.addVectors(weightsOut,       weightsOutUpdate);
-                vector.addVectors(weightsFinal,     weightsFinalUpdate);
-
                 
-                matrix.scalarMatrixMultNoOut(alpha, weightsInUpdate2);
-                matrix.scalarMatrixMultNoOut(alpha, weightsForgetUpdate2);                
-                matrix.scalarMatrixMultNoOut(alpha, weightsMemoryUpdate2);
-                matrix.scalarMatrixMultNoOut(alpha, weightsOutUpdate2);
-                
-                matrix.addMatrices(weightsIn2,      weightsInUpdate2);
-                matrix.addMatrices(weightsForget2,  weightsForgetUpdate2);
-                matrix.addMatrices(weightsMemory2,  weightsMemoryUpdate2);
-                matrix.addMatrices(weightsOut2,     weightsOutUpdate2);
+                matrix.scalarMatrixMultNoOutAdd(weightsIn2,     alpha, weightsInUpdate2);
+                matrix.scalarMatrixMultNoOutAdd(weightsForget2, alpha, weightsForgetUpdate2);                
+                matrix.scalarMatrixMultNoOutAdd(weightsMemory2, alpha, weightsMemoryUpdate2);
+                matrix.scalarMatrixMultNoOutAdd(weightsOut2,    alpha, weightsOutUpdate2);
 
                 for (i = 0; i < weightsInUpdate.length; i++) {
-                    weightsInUpdate[i] = 0;
-                    weightsForgetUpdate[i] = 0;
-                    weightsMemoryUpdate[i] = 0;
-                    weightsOutUpdate[i] = 0;
-                    weightsFinalUpdate[i] =0;
+                    weightsInUpdate[i]      = 0;
+                    weightsForgetUpdate[i]  = 0;
+                    weightsMemoryUpdate[i]  = 0;
+                    weightsOutUpdate[i]     = 0;
+                    weightsFinalUpdate[i]   = 0;
                 }
 
                 for (i = 0; i < weightsInUpdate2.length; i++) {

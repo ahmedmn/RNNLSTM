@@ -116,6 +116,12 @@ public class Matrix {
             vector.scalarVectMultNoOut(scalar, matrix[i]);
         }
     }
+ 
+    public void scalarMatrixMultNoOutAdd(double[][] result, double scalar, double[][] matrix) {
+        for (int i = 0; i < matrix.length; i++) {
+            vector.scalarVectMultNoOutAdd(result[i], scalar, matrix[i]);
+        }
+    }
     
     public double[][] transpose(double[][] matrix) {
         double[][] result = new double[matrix[0].length][];
