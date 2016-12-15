@@ -221,17 +221,18 @@ public class TrueLSTM {
         
         int i, j, k, reviewRow, wordCol, counter =0;
         double[] temp3, temp4, temp5, temp6;
+
+        for (k = 0; k < hiddenDim; k++) {
+            memory[0][k] = 0;
+            output[0][k] = 0;
+        }
+
+        for (k = 0; k < dataColNum+1; k++) {
+            almostOutput[k] = new double[hiddenDim];
+        }
         
         for (j = 0; j < numOfIterations; j++) {
 
-            for (k = 0; k < hiddenDim; k++) {
-                memory[0][k] = 0;
-                output[0][k] = 0;
-            }
-
-            for (k = 0; k < dataColNum+1; k++) {
-                almostOutput[k] = new double[hiddenDim];
-            }
 
             for (reviewRow = 0; reviewRow < numOfReviews; reviewRow++) { //TODO erase
 //            for (int reviewRow = 0; reviewRow < dataRowNum; reviewRow++) {
