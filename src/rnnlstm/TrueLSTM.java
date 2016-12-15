@@ -73,13 +73,14 @@ public class TrueLSTM {
         
         double alpha = 0.05;
         int hiddenDim = 200;
-        int numOfReviews = 20;
+        int numOfReviews = 20000;
         int numOfIterations = 1000000;
-        int numNotPrintedIters = 1;
+        int numNotPrintedIters = numOfReviews;
         
         int dataRowNum = X_train.length;
         int dataColNum = X_train[0].length;
         double[] d          = new double[dataRowNum];        
+        double[] d2         = new double[dataRowNum];
         double[] outputs    = new double[dataRowNum];
         double[] errors     = new double[dataRowNum];
         
@@ -219,7 +220,7 @@ public class TrueLSTM {
             tempMat[i] = new double[hiddenDim];
         }
         
-        int i, j, k, reviewRow, wordCol, counter =0;
+        int i, j, k, reviewRow, reviewRow2, wordCol, counter =0;
         double[] temp3, temp4, temp5, temp6;
 
         for (k = 0; k < hiddenDim; k++) {
@@ -230,6 +231,8 @@ public class TrueLSTM {
         for (k = 0; k < dataColNum+1; k++) {
             almostOutput[k] = new double[hiddenDim];
         }
+
+        x = new double[dataColNum + 1];
         
         for (j = 0; j < numOfIterations; j++) {
 
@@ -238,7 +241,6 @@ public class TrueLSTM {
 //            for (int reviewRow = 0; reviewRow < dataRowNum; reviewRow++) {
                 counter++;
 
-                x = new double[dataColNum + 1];
                 for (wordCol = 0; wordCol < dataColNum; wordCol++) {
                     x[wordCol+1] = X_train[reviewRow][wordCol];
                 }
@@ -432,11 +434,10 @@ public class TrueLSTM {
                     counter= 0;
                     DecimalFormat df = new DecimalFormat(".00");
 
-                    System.out.println("================ " + reviewRow);
-                    
-                    
-                    int rew = 40;
-                    if (rew>numOfReviews) rew = numOfReviews;
+                    System.out.println("================ " + j);
+
+                    int rew = 20;
+                    if(rew > numOfReviews) rew = numOfReviews;
                     
                     System.out.print("Pred: [");
                     for (i = 0; i < rew; i++) {
@@ -456,7 +457,79 @@ public class TrueLSTM {
                     }
                     System.out.println("]");
                     
-                    System.out.println("Accuracy: " + df.format(getPercentage(y_train, d, numOfReviews)) + " %");
+                    System.out.println("Accuracy train data: " + df.format(getPercentage(y_train, d, numOfReviews)) + " %");
+                    
+                    int numOfReviews2 = numOfReviews;
+                    if (numOfReviews2 > X_test.length) numOfReviews2 = X_test.length;
+                    
+                    {
+                        //forward pass
+                        for (reviewRow2 = 0; reviewRow2 < numOfReviews2; reviewRow2++) { 
+
+                            for (wordCol = 0; wordCol < dataColNum; wordCol++) {
+                                x[wordCol+1] = X_test[reviewRow2][wordCol];
+                            }
+
+                            y = y_test[reviewRow2];
+
+                            //forward pass
+                            for (wordCol = 1; wordCol <= dataColNum; wordCol++) {
+                                vector.scalarVectMultNoOut(forgetGate[wordCol], x[wordCol], weightsForget);
+                                matrix.vectorMatrixMultNoOutAdd(forgetGate[wordCol], output[wordCol-1], weightsForget2);
+                                vector.vectSigmoidNoOut(forgetGate[wordCol]);
+                                vector.vectorVectorMultAsteriskNoOut(memory[wordCol], memory[wordCol-1], forgetGate[wordCol]);
+
+                                vector.scalarVectMultNoOut(inputGate[wordCol], x[wordCol], weightsIn);
+                                matrix.vectorMatrixMultNoOutAdd(inputGate[wordCol], output[wordCol-1], weightsIn2);
+                                vector.vectSigmoidNoOut(inputGate[wordCol]);
+
+                                vector.scalarVectMultNoOut(memoryInput[wordCol], x[wordCol], weightsMemory);
+                                matrix.vectorMatrixMultNoOutAdd(memoryInput[wordCol], output[wordCol-1], weightsMemory2);
+                                vector.vectTangentHNoOut(memoryInput[wordCol]);
+
+                                vector.vectorVectorMultAsteriskNoOutAdd(memory[wordCol], 
+                                                                        inputGate[wordCol],
+                                                                        memoryInput[wordCol]);
+
+                                vector.copy(almostOutput[wordCol], memory[wordCol]);
+                                vector.vectTangentHNoOut(almostOutput[wordCol]);
+
+                                vector.scalarVectMultNoOut(outputGate[wordCol], x[wordCol], weightsOut);
+                                matrix.vectorMatrixMultNoOutAdd(outputGate[wordCol], output[wordCol-1], weightsOut2);
+                                vector.vectSigmoidNoOut(outputGate[wordCol]);
+
+                                vector.vectorVectorMultAsteriskNoOut(output[wordCol], outputGate[wordCol], almostOutput[wordCol]);
+                            }
+
+                            //compute output
+                            finalOutput = sigmoid.computeSigmoid(vector.vectorVectorMultDot(output[dataColNum], weightsFinal));
+                            finalOutputError = 2*(y-finalOutput); //Math.pow((y - finalOutput),2)                
+                            d2[reviewRow] = Math.round(finalOutput);
+//                            outputs[reviewRow]  = finalOutput;
+//                            errors[reviewRow]   = finalOutputError;
+                        }
+                        //end of forward pass
+                    }
+                    
+//                    System.out.print("Pred: [");
+//                    for (i = 0; i < rew; i++) {
+//                        System.out.print(df.format(outputs[i]) + " ");
+//                    }
+//                    System.out.println("]");
+
+//                    System.out.print("Actu: [");
+//                    for (i = 0; i < rew; i++) {
+//                        System.out.print(y_test[i] + "   ");
+//                    }
+//                    System.out.println("]");
+
+//                    System.out.print("Err : [");
+//                    for (i = 0; i < rew; i++) {
+//                        System.out.print(df.format(errors[i]) + "   ");
+//                    }
+//                    System.out.println("]");
+                    
+                    System.out.println("Accuracy test  data: " + df.format(getPercentage(y_test, d2, numOfReviews2)) + " %");
                 }
 
             }
