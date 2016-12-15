@@ -214,8 +214,14 @@ public class TrueLSTM {
         
         temp = new double[hiddenDim];
         temp2 = new double[hiddenDim];
+        double[][] tempMat = new double[hiddenDim][];
+        for(int i=0; i<tempMat.length; i++){
+            tempMat[i] = new double[hiddenDim];
+        }
         
         int i, j, k, reviewRow, wordCol, counter =0;
+        double[] temp3, temp4, temp5, temp6;
+        
         for (j = 0; j < numOfIterations; j++) {
 
             for (k = 0; k < hiddenDim; k++) {
@@ -303,7 +309,8 @@ public class TrueLSTM {
                     vector.addVectors(weightsOutUpdate, temp2);
                     vector.vectorVectorMultDotMNoOutAdd(weightsOutUpdate2, output[wordCol-1], temp);
                     //computing dh^(t-1)
-                    matrix.vectorMatrixMultNoOutAdd(currentOutputDelta, temp, matrix.transpose(weightsOut2));
+                    matrix.transposeNoOut(tempMat, weightsOut2);
+                    matrix.vectorMatrixMultNoOutAdd(currentOutputDelta, temp, tempMat);
 
 //                    temp = vector.vectorVectorMultAsterisk(futureOutputDelta, almostOutput[wordCol]); //do^t
 //                    temp = vector.vectorVectorMultAsterisk(temp, vector.vectSigmoidOutputToDerivative(outputGate[wordCol]));//d(o^)^t
@@ -334,7 +341,8 @@ public class TrueLSTM {
                     vector.addVectors(weightsForgetUpdate, temp2);
                     vector.vectorVectorMultDotMNoOutAdd(weightsForgetUpdate2, output[wordCol-1], temp);
                     //computing dh^(t-1)
-                    matrix.vectorMatrixMultNoOutAdd(currentOutputDelta, temp, matrix.transpose(weightsForget2));
+                    matrix.transposeNoOut(tempMat, weightsForget2);
+                    matrix.vectorMatrixMultNoOutAdd(currentOutputDelta, temp, tempMat);
 
 
 //                    //forget gate
@@ -353,7 +361,8 @@ public class TrueLSTM {
                     vector.addVectors(weightsInUpdate, temp2);
                     vector.vectorVectorMultDotMNoOutAdd(weightsInUpdate2,output[wordCol-1], temp);
                     //computing dh^(t-1)
-                    matrix.vectorMatrixMultNoOutAdd(currentOutputDelta, temp, matrix.transpose(weightsIn2));
+                    matrix.transposeNoOut(tempMat, weightsIn2);
+                    matrix.vectorMatrixMultNoOutAdd(currentOutputDelta, temp, tempMat);
 
                     
 //                    //input gate
@@ -372,7 +381,8 @@ public class TrueLSTM {
                     vector.addVectors(weightsMemoryUpdate, temp2);
                     vector.vectorVectorMultDotMNoOutAdd(weightsMemoryUpdate2, output[wordCol-1], temp);
                     //computing dh^(t-1)
-                    matrix.vectorMatrixMultNoOutAdd(currentOutputDelta, temp, matrix.transpose(weightsMemory2));
+                    matrix.transposeNoOut(tempMat, weightsMemory2);
+                    matrix.vectorMatrixMultNoOutAdd(currentOutputDelta, temp, tempMat);
 
                
 //                    //memory input
@@ -395,16 +405,28 @@ public class TrueLSTM {
                 }
 
                 
-                vector.addVectors(weightsIn, vector.scalarVectMult(alpha, weightsInUpdate));
-                vector.addVectors(weightsForget, vector.scalarVectMult(alpha, weightsForgetUpdate));
-                vector.addVectors(weightsMemory, vector.scalarVectMult(alpha, weightsMemoryUpdate));
-                vector.addVectors(weightsOut, vector.scalarVectMult(alpha, weightsOutUpdate));
-                vector.addVectors(weightsFinal, vector.scalarVectMult(alpha,weightsFinalUpdate));
+                vector.scalarVectMultNoOut(alpha,   weightsInUpdate);
+                vector.scalarVectMultNoOut(alpha,   weightsForgetUpdate);                
+                vector.scalarVectMultNoOut(alpha,   weightsMemoryUpdate);
+                vector.scalarVectMultNoOut(alpha,   weightsOutUpdate);
+                vector.scalarVectMultNoOut(alpha,   weightsFinalUpdate);
+                
+                vector.addVectors(weightsIn,        weightsInUpdate);
+                vector.addVectors(weightsForget,    weightsForgetUpdate);
+                vector.addVectors(weightsMemory,    weightsMemoryUpdate);
+                vector.addVectors(weightsOut,       weightsOutUpdate);
+                vector.addVectors(weightsFinal,     weightsFinalUpdate);
 
-                matrix.addMatrices(weightsIn2, matrix.scalarMatrixMult(alpha, weightsInUpdate2));
-                matrix.addMatrices(weightsForget2, matrix.scalarMatrixMult(alpha, weightsForgetUpdate2));
-                matrix.addMatrices(weightsMemory2, matrix.scalarMatrixMult(alpha, weightsMemoryUpdate2));
-                matrix.addMatrices(weightsOut2, matrix.scalarMatrixMult(alpha, weightsOutUpdate2));
+                
+                matrix.scalarMatrixMultNoOut(alpha, weightsInUpdate2);
+                matrix.scalarMatrixMultNoOut(alpha, weightsForgetUpdate2);                
+                matrix.scalarMatrixMultNoOut(alpha, weightsMemoryUpdate2);
+                matrix.scalarMatrixMultNoOut(alpha, weightsOutUpdate2);
+                
+                matrix.addMatrices(weightsIn2,      weightsInUpdate2);
+                matrix.addMatrices(weightsForget2,  weightsForgetUpdate2);
+                matrix.addMatrices(weightsMemory2,  weightsMemoryUpdate2);
+                matrix.addMatrices(weightsOut2,     weightsOutUpdate2);
 
                 for (i = 0; i < weightsInUpdate.length; i++) {
                     weightsInUpdate[i] = 0;
@@ -415,15 +437,19 @@ public class TrueLSTM {
                 }
 
                 for (i = 0; i < weightsInUpdate2.length; i++) {
+                    temp3 = weightsInUpdate2[i];
+                    temp4 = weightsForgetUpdate2[i];
+                    temp5 = weightsMemoryUpdate2[i];
+                    temp6 = weightsOutUpdate2[i];
                     for (k = 0; k < weightsInUpdate2[0].length; k++) {
-                        weightsInUpdate2[i][k] = 0;
-                        weightsForgetUpdate2[i][k] = 0;
-                        weightsMemoryUpdate2[i][k] = 0;
-                        weightsOutUpdate2[i][k] = 0;
+                        temp3[k] = 0;
+                        temp4[k] = 0;
+                        temp5[k] = 0;
+                        temp6[k] = 0;
                     }
                 }
 
-                
+                if (counter % 100 == 0) System.out.print(", " + counter);
                 
                 if (counter % numNotPrintedIters == 0) {
                     counter= 0;
@@ -431,20 +457,24 @@ public class TrueLSTM {
 
                     System.out.println("================ " + reviewRow);
                     
+                    
+                    int rew = 40;
+                    if (rew>numOfReviews) rew = numOfReviews;
+                    
                     System.out.print("Pred: [");
-                    for (i = 0; i < numOfReviews; i++) {
+                    for (i = 0; i < rew; i++) {
                         System.out.print(df.format(outputs[i]) + " ");
                     }
                     System.out.println("]");
 
                     System.out.print("Actu: [");
-                    for (i = 0; i < numOfReviews; i++) {
+                    for (i = 0; i < rew; i++) {
                         System.out.print(y_train[i] + "   ");
                     }
                     System.out.println("]");
 
                     System.out.print("Err : [");
-                    for (i = 0; i < numOfReviews; i++) {
+                    for (i = 0; i < rew; i++) {
                         System.out.print(df.format(errors[i]) + "   ");
                     }
                     System.out.println("]");
