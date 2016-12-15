@@ -74,6 +74,17 @@ public class Matrix {
                 result[i] += vect[j] * temp[i];
         }
     }
+
+    public void vectorTransposeMatrixMultNoOutAdd(double[] result, double[] vect, double[][] matrix) {
+//        if (vect.length != matrix.length) {
+//            throw new IllegalArgumentException("Dimension mismatch, vector length is "
+//                    + vect.length + " and matrix column length is " + matrix.length + ".");
+//        }
+
+        for (int j = 0; j < vect.length; j++) {
+            result[j] += vector.vectorVectorMultDot(vect, matrix[j]);
+        }
+    }
     
     public void addMatrices(double[][] matrix1, double[][] matrix2) {
 //        if (matrix1.length != matrix2.length) {

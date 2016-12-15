@@ -72,10 +72,10 @@ public class TrueLSTM {
         ////parameters of neural network
         
         double alpha = 0.05;
-        int hiddenDim = 300;
-        int numOfReviews = 20000;
+        int hiddenDim = 200;
+        int numOfReviews = 20;
         int numOfIterations = 1000000;
-        int numNotPrintedIters = 20000;
+        int numNotPrintedIters = 1;
         
         int dataRowNum = X_train.length;
         int dataColNum = X_train[0].length;
@@ -309,8 +309,7 @@ public class TrueLSTM {
                     vector.addVectors(weightsOutUpdate, temp2);
                     vector.vectorVectorMultDotMNoOutAdd(weightsOutUpdate2, output[wordCol-1], temp);
                     //computing dh^(t-1)
-                    matrix.transposeNoOut(tempMat, weightsOut2);
-                    matrix.vectorMatrixMultNoOutAdd(currentOutputDelta, temp, tempMat);
+                    matrix.vectorTransposeMatrixMultNoOutAdd(currentOutputDelta, temp, weightsOut2);
 
 //                    temp = vector.vectorVectorMultAsterisk(futureOutputDelta, almostOutput[wordCol]); //do^t
 //                    temp = vector.vectorVectorMultAsterisk(temp, vector.vectSigmoidOutputToDerivative(outputGate[wordCol]));//d(o^)^t
@@ -341,8 +340,7 @@ public class TrueLSTM {
                     vector.addVectors(weightsForgetUpdate, temp2);
                     vector.vectorVectorMultDotMNoOutAdd(weightsForgetUpdate2, output[wordCol-1], temp);
                     //computing dh^(t-1)
-                    matrix.transposeNoOut(tempMat, weightsForget2);
-                    matrix.vectorMatrixMultNoOutAdd(currentOutputDelta, temp, tempMat);
+                    matrix.vectorTransposeMatrixMultNoOutAdd(currentOutputDelta, temp, weightsForget2);
 
 
 //                    //forget gate
@@ -361,8 +359,7 @@ public class TrueLSTM {
                     vector.addVectors(weightsInUpdate, temp2);
                     vector.vectorVectorMultDotMNoOutAdd(weightsInUpdate2,output[wordCol-1], temp);
                     //computing dh^(t-1)
-                    matrix.transposeNoOut(tempMat, weightsIn2);
-                    matrix.vectorMatrixMultNoOutAdd(currentOutputDelta, temp, tempMat);
+                    matrix.vectorTransposeMatrixMultNoOutAdd(currentOutputDelta, temp, weightsIn2);
 
                     
 //                    //input gate
@@ -381,8 +378,7 @@ public class TrueLSTM {
                     vector.addVectors(weightsMemoryUpdate, temp2);
                     vector.vectorVectorMultDotMNoOutAdd(weightsMemoryUpdate2, output[wordCol-1], temp);
                     //computing dh^(t-1)
-                    matrix.transposeNoOut(tempMat, weightsMemory2);
-                    matrix.vectorMatrixMultNoOutAdd(currentOutputDelta, temp, tempMat);
+                    matrix.vectorTransposeMatrixMultNoOutAdd(currentOutputDelta, temp, weightsMemory2);
 
                
 //                    //memory input
