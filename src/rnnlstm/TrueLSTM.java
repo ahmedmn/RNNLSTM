@@ -12,7 +12,6 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import static rnnlstm.BinaryAdding.addVectors;
 
 /**
  * Implementation of the most used type of LSTM.
@@ -39,11 +38,11 @@ public class TrueLSTM {
 
     public static void main(String[] args) throws IOException {
 
-        List<String> X_trainStr = Files.readAllLines(Paths.get("/home/xkorenc/Desktop/neuralNetworks/RNNLSTM.git/trunk/src/Data/X_train.csv"));
-        List<String> y_trainStr = Files.readAllLines(Paths.get("/home/xkorenc/Desktop/neuralNetworks/RNNLSTM.git/trunk/src/Data/y_train.csv"));
+        List<String> X_trainStr = Files.readAllLines(Paths.get(args[0]));
+        List<String> y_trainStr = Files.readAllLines(Paths.get(args[1]));
 
-        List<String> X_testStr = Files.readAllLines(Paths.get("/home/xkorenc/Desktop/neuralNetworks/RNNLSTM.git/trunk/src/Data/X_test.csv"));
-        List<String> y_testStr = Files.readAllLines(Paths.get("/home/xkorenc/Desktop/neuralNetworks/RNNLSTM.git/trunk/src/Data/y_test.csv"));
+        List<String> X_testStr = Files.readAllLines(Paths.get(args[2]));
+        List<String> y_testStr = Files.readAllLines(Paths.get(args[3]));
 
         int[][] X_train = LoadData(X_trainStr);
         int[] y_train = Arrays.asList(y_trainStr.toArray(new String[y_trainStr.size()])).stream().mapToInt(Integer::parseInt).toArray();
@@ -73,7 +72,7 @@ public class TrueLSTM {
         
         double alpha = 0.05;
         int hiddenDim = 200;
-        int numOfReviews = 20000;
+        int numOfReviews = 50;
         int numOfIterations = 1000000;
         int numNotPrintedIters = numOfReviews;
         
